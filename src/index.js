@@ -1,8 +1,8 @@
 // / @flow
 
 import fs from 'fs';
-import path from 'path';
 import express from 'express';
+import * as handlers from './handlers/';
 import { error, success } from './utils/logger';
 
 type initConfiguration = {
@@ -25,41 +25,16 @@ const init = (
   });
 
   fs.readdirSync(directory).forEach((file) => {
-    if (!/\.json$/.test(file)) return;
-
-    const source = fs.readFileSync(path.join(directory, file), 'utf8');
-    const {
-      url,
-      regex,
-      method = 'get',
-      methods,
-      status = 200,
-      body,
-    } = JSON.parse(source);
-
-    (methods || [method]).forEach((verb) => {
-      let listenTo;
-
-      if (typeof url === 'string') {
-        listenTo = url;
-      } else if (typeof regex === 'string') {
-        listenTo = new RegExp(regex);
-      } else {
-        listenTo = '';
-      }
-
-      console.log(`Adding ${verb} route: ${listenTo}`);
-
-      app[verb.toLowerCase()](listenTo, (req, res) => {
-        res.status(status);
-        if (body !== undefined) {
-          res.setHeader('Content-Type', 'application/json');
-          res.send(JSON.stringify(body));
-          return;
+    handlers.reduce((handled, handler) => {
+      if (!handled) {
+        const { tester, handle } = handler;
+        if (tester.test(file)) {
+          handle(app, file);
         }
-        res.send();
-      });
-    });
+        return true;
+      }
+      return false;
+    }, false);
   });
 
   app.listen(port, (err) => {
