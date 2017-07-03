@@ -1,6 +1,7 @@
 // / @flow
 
 import fs from 'fs';
+import path from 'path';
 import express from 'express';
 import * as handlers from './handlers/';
 import { error, success } from './utils/logger';
@@ -21,15 +22,19 @@ const init = (
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Headers', 'X-Requested-With');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header(
+      'Access-Control-Allow-Methods',
+      'POST, GET, PUT, DELETE, OPTIONS',
+    );
     next();
   });
 
   fs.readdirSync(directory).forEach((file) => {
-    handlers.reduce((handled, handler) => {
+    Object.keys(handlers).map(x => handlers[x]).reduce((handled, handler) => {
       if (!handled) {
         const { tester, handle } = handler;
         if (tester.test(file)) {
-          handle(app, file);
+          handle(app, path.join(directory, file));
         }
         return true;
       }

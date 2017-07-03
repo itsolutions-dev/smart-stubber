@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 const handle = (app, file) => {
   const {
     url,
@@ -6,7 +8,7 @@ const handle = (app, file) => {
     methods,
     status = 200,
     body,
-  } = JSON.parse(file);
+  } = JSON.parse(fs.readFileSync(file, 'utf8'));
 
   (methods || [method]).forEach((verb) => {
     let listenTo;
