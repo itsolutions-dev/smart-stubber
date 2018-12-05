@@ -18,10 +18,13 @@ const init = (
 
   app.all('*', (req, res, next) => {
     const origin = req.get('Origin');
+    const requestHeaders = req.get('Access-Control-Request-Headers');
+
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    if (requestHeaders !== undefined) {
+      res.header('Access-Control-Allow-Headers', requestHeaders);
+    }
     res.header(
       'Access-Control-Allow-Methods',
       'POST, GET, PUT, DELETE, OPTIONS',
